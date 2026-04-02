@@ -137,7 +137,8 @@ const styles = StyleSheet.create({
   },
   placeholderText: { color: '#9CA3AF', fontSize: 12 },
   card: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    maxWidth: 200,
     backgroundColor: '#1F1F1F',
     borderRadius: 8,
     marginBottom: 16,
