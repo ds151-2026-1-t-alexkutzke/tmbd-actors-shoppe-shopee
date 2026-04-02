@@ -1,37 +1,30 @@
-import { Link, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, FlatList, Pressable } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { api } from '../../src/api/tmdb';
 
-interface MovieDetails {
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  vote_average: number;
-  runtime: number;
-}
-
-interface Actor {
+interface ActorDetails {
+  gender: number;
   id: number;
+  known_for_department: string;
   name: string;
+  popularity: number;
   profile_path: string;
   character: string;
 }
 
-export default function MovieDetailsScreen() {
+
+export default function ActorDetailsScreen() {
   // Captura o parâmetro '[id]' do nome do arquivo
   const { id } = useLocalSearchParams();
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [actors, setActors] = useState<Actor[]>([]);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
         const response = await api.get(`/movie/${id}`);
         setMovie(response.data);
-        // const responseActors = await api.get(`/movie/${id}/credits`);
-        // setActors(responseActors.data.results);
       } catch (error) {
         console.error('Erro ao buscar detalhes:', error);
       } finally {
@@ -58,31 +51,6 @@ export default function MovieDetailsScreen() {
     );
   }
 
-
-  const renderActorItem = ({ item }: { item: Actor }) => (
-    // Link do Expo Router passando o ID do filme como parâmetro dinâmico
-    <Link href={`/actor/${item.id}`} asChild>
-      <Pressable style={styles.card}>
-        {item.profile_path ? (
-          <Image
-            source={{ uri: `https://image.tmdb.org/t/p/w500${item.profile_path}` }}
-            style={styles.poster_actor}
-          />
-        ) : (
-          <View style={styles.posterPlaceholder}>
-            <Text style={styles.placeholderText}>Sem Imagem</Text>
-          </View>
-        )}
-        <View style={styles.cardContent}>
-          <Text style={styles.title} numberOfLines={2}>{item.name}</Text>
-          <Text style={styles.date}>
-            {item.character}
-          </Text>
-        </View>
-      </Pressable>
-    </Link>
-  );
-
   return (
     <ScrollView style={styles.container}>
       {movie.poster_path && (
@@ -104,16 +72,13 @@ export default function MovieDetailsScreen() {
         <Text style={styles.overview}>
           {movie.overview || 'Sinopse não disponível para este filme.'}
         </Text>
-
       </View>
     </ScrollView>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121212' },
-  listContainer: { padding: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   poster: { width: '100%', height: 400 },
   content: { padding: 20 },
@@ -123,22 +88,4 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
   overview: { color: '#D1D5DB', fontSize: 16, lineHeight: 24 },
   errorText: { color: '#FFFFFF', fontSize: 18 },
-  poster_actor: { width: 100, height: 150 },
-  posterPlaceholder: {
-    width: 100,
-    height: 150,
-    backgroundColor: '#333333',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: { color: '#9CA3AF', fontSize: 12 },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#1F1F1F',
-    borderRadius: 8,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  cardContent: { flex: 1, padding: 16, justifyContent: 'center' },
-  date: { color: '#9CA3AF', fontSize: 14 },
 });

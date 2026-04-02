@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // A chave deve ser gerada no painel do themoviedb.org
-const TMDB_API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY;
+const TMDB_API_KEY = '6dca8eaddeb8c96f6414f786f944b5fd';
 
 export const api = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
