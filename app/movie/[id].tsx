@@ -30,8 +30,8 @@ export default function MovieDetailsScreen() {
       try {
         const response = await api.get(`/movie/${id}`);
         setMovie(response.data);
-        // const responseActors = await api.get(`/movie/${id}/credits`);
-        // setActors(responseActors.data.results);
+        const responseActors = await api.get(`/movie/${id}/credits`);
+        setActors(responseActors.data.cast);
       } catch (error) {
         console.error('Erro ao buscar detalhes:', error);
       } finally {
@@ -84,7 +84,7 @@ export default function MovieDetailsScreen() {
   );
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} nestedScrollEnabled={true}>
       {movie.poster_path && (
         <Image
           source={{ uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}` }}
@@ -106,6 +106,17 @@ export default function MovieDetailsScreen() {
         </Text>
 
       </View>
+
+
+      <FlatList
+        horizontal
+        data={actors}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderActorItem}
+        contentContainerStyle={styles.listContainer}
+      />
+
+
     </ScrollView>
 
   );

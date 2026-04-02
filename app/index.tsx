@@ -12,7 +12,7 @@ import {
 import { Link } from 'expo-router';
 import { api } from '../src/api/tmdb';
 
-interface Movie {
+export interface Movie {
   id: number;
   title: string;
   poster_path: string | null;
@@ -93,7 +93,6 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
-          style={{ flexDirection: 'row' }}
           data={movies}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderMovieItem}
@@ -133,6 +132,6 @@ const styles = StyleSheet.create({
   },
   placeholderText: { color: '#9CA3AF', fontSize: 12 },
   cardContent: { flex: 1, padding: 16, justifyContent: 'center' },
-  date: { color: '#9CA3AF', fontSize: 14 },
   title: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  date: { color: '#9CA3AF', fontSize: 14 },
 });
