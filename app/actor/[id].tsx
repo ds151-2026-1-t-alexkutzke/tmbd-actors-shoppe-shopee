@@ -1,37 +1,37 @@
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, FlatList, Pressable } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, Pressable, FlatList } from 'react-native';
 import { api } from '../../src/api/tmdb';
+import { Movie } from '..';
 
-interface MovieDetails {
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  vote_average: number;
-  runtime: number;
-}
-
-interface Actor {
+interface ActorDetails {
+  gender: number;
   id: number;
+  also_known_as: string[]
   name: string;
+  biography: string;
+  popularity: number;
   profile_path: string;
   character: string;
+  birthday: string;
+  deathday: string;
 }
 
-export default function MovieDetailsScreen() {
+
+export default function ActorDetailsScreen() {
   // Captura o parâmetro '[id]' do nome do arquivo
   const { id } = useLocalSearchParams();
-  const [movie, setMovie] = useState<MovieDetails | null>(null);
+  const [actor, setActor] = useState<ActorDetails | null>(null);
+  const [movies, setMovies] = useState<Movie[]>([])
   const [isLoading, setIsLoading] = useState(true);
-  const [actors, setActors] = useState<Actor[]>([]);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
-        const response = await api.get(`/movie/${id}`);
-        setMovie(response.data);
-        const responseActors = await api.get(`/movie/${id}/credits`);
-        setActors(responseActors.data.cast);
+        const response = await api.get(`/person/${id}`);
+        setActor(response.data);
+        const responseMovies = await api.get(`/person/${id}/movie_credits`);
+        setMovies(responseMovies.data.cast);
       } catch (error) {
         console.error('Erro ao buscar detalhes:', error);
       } finally {
@@ -50,7 +50,7 @@ export default function MovieDetailsScreen() {
     );
   }
 
-  if (!movie) {
+  if (!actor) {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>Filme não encontrado.</Text>
@@ -58,15 +58,14 @@ export default function MovieDetailsScreen() {
     );
   }
 
-
-  const renderActorItem = ({ item }: { item: Actor }) => (
+  const renderMovieItem = ({ item }: { item: Movie }) => (
     // Link do Expo Router passando o ID do filme como parâmetro dinâmico
-    <Link href={`/actor/${item.id}`} asChild>
+    <Link href={`/movie/${item.id}`} asChild>
       <Pressable style={styles.card}>
-        {item.profile_path ? (
+        {item.poster_path ? (
           <Image
-            source={{ uri: `https://image.tmdb.org/t/p/w500${item.profile_path}` }}
-            style={styles.poster_actor}
+            source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
+            style={styles.poster}
           />
         ) : (
           <View style={styles.posterPlaceholder}>
@@ -74,9 +73,9 @@ export default function MovieDetailsScreen() {
           </View>
         )}
         <View style={styles.cardContent}>
-          <Text style={styles.title} numberOfLines={2}>{item.name}</Text>
+          <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
           <Text style={styles.date}>
-            {item.character}
+            {item.release_date ? item.release_date.substring(0, 4) : 'N/A'}
           </Text>
         </View>
       </Pressable>
@@ -84,49 +83,44 @@ export default function MovieDetailsScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} nestedScrollEnabled={true}>
-      {movie.poster_path && (
+    <ScrollView style={styles.container}>
+      {actor.profile_path && (
         <Image
-          source={{ uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}` }}
+          source={{ uri: `https://image.tmdb.org/t/p/w500${actor.profile_path}` }}
           style={styles.poster}
           resizeMode="cover"
         />
       )}
       <View style={styles.content}>
-        <Text style={styles.title}>{movie.title}</Text>
+        <Text style={styles.title}>{actor.name}</Text>
 
         <View style={styles.statsContainer}>
-          <Text style={styles.statText}>⭐ {movie.vote_average.toFixed(1)}/10</Text>
-          <Text style={styles.statText}>⏱️ {movie.runtime} min</Text>
+          <Text style={styles.statText}>⭐ {actor.popularity}</Text>
+          <Text style={styles.statText}>⏱️ {actor.birthday} -- {actor.deathday ? actor.deathday : "presente"}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Sinopse</Text>
+        <Text style={styles.sectionTitle}>biografia</Text>
         <Text style={styles.overview}>
-          {movie.overview || 'Sinopse não disponível para este filme.'}
+          {actor.biography || 'Biografia Indisponível'}
         </Text>
-
       </View>
-
 
       <FlatList
         horizontal
-        data={actors}
+        data={movies}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderActorItem}
+        renderItem={renderMovieItem}
         contentContainerStyle={styles.listContainer}
       />
 
-
     </ScrollView>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121212' },
-  listContainer: { padding: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  poster: { width: '100%', height: 400 },
+  poster: { width: 100, height: 150 },
   content: { padding: 20 },
   title: { color: '#FFFFFF', fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   statsContainer: { flexDirection: 'row', gap: 16, marginBottom: 24 },
@@ -134,7 +128,6 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
   overview: { color: '#D1D5DB', fontSize: 16, lineHeight: 24 },
   errorText: { color: '#FFFFFF', fontSize: 18 },
-  poster_actor: { width: 100, height: 150 },
   posterPlaceholder: {
     width: 100,
     height: 150,
@@ -153,4 +146,5 @@ const styles = StyleSheet.create({
   },
   cardContent: { flex: 1, padding: 16, justifyContent: 'center' },
   date: { color: '#9CA3AF', fontSize: 14 },
+  listContainer: { padding: 16 },
 });

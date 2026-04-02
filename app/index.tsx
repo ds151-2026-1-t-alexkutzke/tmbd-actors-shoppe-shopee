@@ -12,7 +12,7 @@ import {
 import { Link } from 'expo-router';
 import { api } from '../src/api/tmdb';
 
-interface Movie {
+export interface Movie {
   id: number;
   title: string;
   poster_path: string | null;
